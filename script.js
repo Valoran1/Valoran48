@@ -17,8 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = "";
     input.focus();
 
-    const botElement = addMessage("bot", "...");
+    const botElement = addMessage("bot", "⌛");
     botElement.classList.add("typing");
+    botElement.innerHTML = `<span class="dot-typing"></span>`;
 
     try {
       const response = await fetch("/.netlify/functions/chat", {
@@ -65,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   });
 });
+
 
 
 
