@@ -17,9 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = "";
     input.focus();
 
-    const botElement = addMessage("bot", "⌛");
-    botElement.classList.add("typing");
-    botElement.innerHTML = `<span class="dot-typing"></span>`;
+    const botElement = addMessage("bot", "");
+    const dots = document.createElement("div");
+    dots.classList.add("dot-typing");
+    dots.innerHTML = "<span></span>";
+    botElement.appendChild(dots);
 
     try {
       const response = await fetch("/.netlify/functions/chat", {
@@ -37,8 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const decoder = new TextDecoder("utf-8");
       let botMsg = "";
 
-      botElement.classList.remove("typing");
-      botElement.textContent = "";
+      // Remove typing effect
+      botElement.innerHTML = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -58,6 +60,17 @@ document.addEventListener("DOMContentLoaded", () => {
     chatLog.scrollTop = chatLog.scrollHeight;
   });
 
+  // Helper function to add message to chat
+  function addMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = `message ${role}-message`;
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+
+  // Scroll button
   window.addEventListener("scroll", () => {
     scrollBtn.style.display = window.scrollY > 100 ? "block" : "none";
   });
@@ -66,8 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   });
 });
-
-
 
 
 
