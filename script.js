@@ -1,53 +1,47 @@
-const scrollBtn = document.getElementById("scroll-btn");
-
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 100) {
-    scrollBtn.style.display = "block";
-  } else {
-    scrollBtn.style.display = "none";
-  }
-});
-
-function scrollToBottom() {
-  const chatLog = document.getElementById("chat-log");
-  chatLog.scrollTop = chatLog.scrollHeight;
-}
-
 const form = document.getElementById("chat-form");
 const input = document.getElementById("user-input");
-const chatLog = document.getElementById("chat-log");
+const chatLog = document.getElementById("chat-box");
+const scrollBtn = document.getElementById("scroll-btn");
+
+let conversation = [];
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const message = input.value.trim();
   if (message === "") return;
 
+  conversation.push({ role: "user", content: message });
   addMessage("user", message);
   input.value = "";
   input.focus();
 
-  const botElement = addMessage("bot", "Valoran piše");
+  const botElement = addMessage("bot", "Valoran piše...");
   botElement.classList.add("typing");
 
   const response = await fetch("/.netlify/functions/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message })
+    body: JSON.stringify({ messages: conversation })
   });
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
+  let botMsg = "";
+
   botElement.classList.remove("typing");
+  botElement.textContent = ""; // odstrani "Valoran piše..."
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
     const chunk = decoder.decode(value);
-    botElement.textContent += chunk;
+    botMsg += chunk;
+    botElement.textContent = botMsg;
     scrollToBottom();
   }
 
-  input.focus();
+  conversation.push({ role: "assistant", content: botMsg });
+  scrollToBottom();
 });
 
 function addMessage(role, text) {
@@ -58,6 +52,19 @@ function addMessage(role, text) {
   scrollToBottom();
   return div;
 }
+
+function scrollToBottom() {
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 100) {
+    scrollBtn.style.display = "block";
+  } else {
+    scrollBtn.style.display = "none";
+  }
+});
+
 
 
 
