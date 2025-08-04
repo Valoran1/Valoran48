@@ -12,13 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const message = input.value.trim();
     if (!message) return;
 
-    // Dodaj vprašanje uporabnika
     conversation.push({ role: "user", content: message });
     addMessage("user", message);
     input.value = "";
     input.focus();
 
-    // Prikaži indikator pisanja (tri pikice)
     const botElement = addMessage("bot", "...");
     botElement.classList.add("typing");
 
@@ -37,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
       let botMsg = "";
+
       botElement.classList.remove("typing");
       botElement.textContent = "";
 
@@ -46,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const chunk = decoder.decode(value);
         botMsg += chunk;
         botElement.textContent = botMsg;
-        scrollToBottom();
+        chatLog.scrollTop = chatLog.scrollHeight;
       }
 
       conversation.push({ role: "assistant", content: botMsg });
@@ -55,23 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error(err);
     }
 
-    scrollToBottom();
+    chatLog.scrollTop = chatLog.scrollHeight;
   });
 
-  function addMessage(role, text) {
-    const div = document.createElement("div");
-    div.className = `message ${role}-message fade-in`;
-    div.textContent = text;
-    chatLog.appendChild(div);
-    scrollToBottom();
-    return div;
-  }
-
-  function scrollToBottom() {
-    chatLog.scrollTop = chatLog.scrollHeight;
-  }
-
-  // Estetski prikaz gumba za scroll
   window.addEventListener("scroll", () => {
     scrollBtn.style.display = window.scrollY > 100 ? "block" : "none";
   });
