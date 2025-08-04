@@ -8,40 +8,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const message = input.value.trim();
-    if (message === "") return;
 
+    const message = input.value.trim();
+    if (!message) return;
+
+    // Dodaj vprašanje uporabnika
     conversation.push({ role: "user", content: message });
     addMessage("user", message);
     input.value = "";
     input.focus();
 
-    const botElement = addMessage("bot", "Valoran piše...");
+    // Prikaži indikator pisanja (tri pikice)
+    const botElement = addMessage("bot", "...");
     botElement.classList.add("typing");
 
-    const response = await fetch("/.netlify/functions/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: conversation })
-    });
+    try {
+      const response = await fetch("/.netlify/functions/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: conversation })
+      });
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let botMsg = "";
+      if (!response.ok || !response.body) {
+        botElement.textContent = "Napaka pri povezavi z AI.";
+        return;
+      }
 
-    botElement.classList.remove("typing");
-    botElement.textContent = "";
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let botMsg = "";
+      botElement.classList.remove("typing");
+      botElement.textContent = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      botMsg += chunk;
-      botElement.textContent = botMsg;
-      scrollToBottom();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        botMsg += chunk;
+        botElement.textContent = botMsg;
+        scrollToBottom();
+      }
+
+      conversation.push({ role: "assistant", content: botMsg });
+    } catch (err) {
+      botElement.textContent = "Prišlo je do napake. Poskusi znova.";
+      console.error(err);
     }
 
-    conversation.push({ role: "assistant", content: botMsg });
     scrollToBottom();
   });
 
@@ -58,12 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
+  // Estetski prikaz gumba za scroll
   window.addEventListener("scroll", () => {
-    if (window.scrollY > 100) {
-      scrollBtn.style.display = "block";
-    } else {
-      scrollBtn.style.display = "none";
-    }
+    scrollBtn.style.display = window.scrollY > 100 ? "block" : "none";
+  });
+
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   });
 });
 
