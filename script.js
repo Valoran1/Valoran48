@@ -1,89 +1,63 @@
-const chatBox = document.getElementById("chat-box");
-const chatForm = document.getElementById("chat-form");
-const userInput = document.getElementById("user-input");
 const scrollBtn = document.getElementById("scroll-btn");
 
-let messages = [];
-
-function addMessage(content, sender, typing = false) {
-  const msg = document.createElement("div");
-  msg.className = sender === "user" ? "user-message" : "bot-message";
-  if (typing) {
-    const span = document.createElement("span");
-    msg.appendChild(span);
-    chatBox.appendChild(msg);
-    return span;
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 100) {
+    scrollBtn.style.display = "block";
   } else {
-    msg.textContent = content;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    scrollBtn.style.display = "none";
   }
-}
-
-function showTypingIndicator() {
-  const typing = document.createElement("div");
-  typing.id = "typing-indicator";
-  typing.className = "bot-message";
-  typing.textContent = "Valoran piše...";
-  chatBox.appendChild(typing);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function removeTypingIndicator() {
-  const typing = document.getElementById("typing-indicator");
-  if (typing) typing.remove();
-}
+});
 
 function scrollToBottom() {
-  chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: "smooth" });
+  const chatLog = document.getElementById("chat-log");
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-chatBox.addEventListener("scroll", () => {
-  scrollBtn.style.display = chatBox.scrollTop < chatBox.scrollHeight - 300 ? "block" : "none";
-});
+const form = document.getElementById("chat-form");
+const input = document.getElementById("user-input");
+const chatLog = document.getElementById("chat-log");
 
-chatForm.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const input = userInput.value.trim();
-  if (!input) return;
+  const message = input.value.trim();
+  if (message === "") return;
 
-  addMessage(input, "user");
-  userInput.value = "";
-  messages.push({ role: "user", content: input });
+  addMessage("user", message);
+  input.value = "";
+  input.focus();
 
-  showTypingIndicator();
+  const botElement = addMessage("bot", "Valoran piše");
+  botElement.classList.add("typing");
 
-  try {
-    const res = await fetch("/.netlify/functions/chat", {
-      method: "POST",
-      body: JSON.stringify({ messages }),
-    });
+  const response = await fetch("/.netlify/functions/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message })
+  });
 
-    const reply = await res.text();
-    removeTypingIndicator();
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  botElement.classList.remove("typing");
 
-    const span = addMessage("", "bot", true);
-    let words = reply.split(" ");
-    let i = 0;
-
-    function typeNextWord() {
-      if (i < words.length) {
-        span.textContent += (i > 0 ? " " : "") + words[i];
-        chatBox.scrollTop = chatBox.scrollHeight;
-        i++;
-        setTimeout(typeNextWord, 80); // hitrost
-      } else {
-        messages.push({ role: "assistant", content: reply });
-      }
-    }
-
-    typeNextWord();
-  } catch (err) {
-    removeTypingIndicator();
-    addMessage("Napaka pri komunikaciji z Valoranom.", "bot");
-    console.error(err);
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value);
+    botElement.textContent += chunk;
+    scrollToBottom();
   }
+
+  input.focus();
 });
+
+function addMessage(role, text) {
+  const div = document.createElement("div");
+  div.className = `message ${role}-message fade-in`;
+  div.textContent = text;
+  chatLog.appendChild(div);
+  scrollToBottom();
+  return div;
+}
 
 
 
