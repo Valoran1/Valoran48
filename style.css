@@ -38,7 +38,7 @@ body {
 }
 
 /* Chat log */
-#chat-log {
+#chat-box {
   max-height: 65vh;
   overflow-y: auto;
   padding: 10px;
@@ -124,23 +124,53 @@ body {
   background-color: #333;
 }
 
-/* Typing effect */
-.typing::after {
-  content: '...';
-  animation: blink 1s infinite;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-@keyframes blink {
-  0% { opacity: 0.2; }
-  50% { opacity: 1; }
-  100% { opacity: 0.2; }
-}
-
+/* Fade-in animacija */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typing effect – remove default */
+.typing::after {
+  content: '';
+}
+
+/* Custom 3-dot typing indicator */
+.dot-typing {
+  position: relative;
+  width: 60px;
+  height: 20px;
+}
+
+.dot-typing::before,
+.dot-typing::after,
+.dot-typing span {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #888;
+  animation: blink 1.5s infinite;
+}
+
+.dot-typing span {
+  left: 0;
+  animation-delay: 0s;
+}
+.dot-typing::before {
+  left: 16px;
+  animation-delay: 0.2s;
+}
+.dot-typing::after {
+  left: 32px;
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
 }
 
 
