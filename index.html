@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Valoran – AI mentor za moške</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Logo.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <section class="hero">
+        <img src="Logo.png" alt="Valoran Logo" class="logo"/>
+        <h1 class="title">VALORAN</h1>
+        <p class="subtitle">Tvoj AI mentor za disciplino, moč in jasnost</p>
+      </section>
+
+      <section id="chat-box" class="chat-container"></section>
+
+      <form id="chat-form" class="chat-form">
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Vnesi vprašanje..."
+          autocomplete="off"
+        />
+        <button type="submit">➤</button>
+      </form>
+    </div>
+
+    <button id="scroll-btn">↓</button>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
